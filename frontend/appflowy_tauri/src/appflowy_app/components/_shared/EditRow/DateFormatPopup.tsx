@@ -38,61 +38,59 @@ export const DateFormatPopup = ({
 
   return (
     <PopupWindow className={'p-2 text-xs'} onOutsideClick={onOutsideClick} left={left} top={top}>
-      <button
-        onClick={() => changeFormat(DateFormat.Friendly)}
-        className={
-          'flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 hover:bg-main-secondary'
-        }
-      >
-        {t('grid.field.dateFormatFriendly')}
-
-        {dateType?.dateFormat === DateFormat.Friendly && (
-          <div className={'ml-8 h-5 w-5 p-1'}>
-            <CheckmarkSvg></CheckmarkSvg>
-          </div>
-        )}
-      </button>
-      <button
-        onClick={() => changeFormat(DateFormat.ISO)}
-        className={
-          'flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 hover:bg-main-secondary'
-        }
-      >
-        {t('grid.field.dateFormatISO')}
-
-        {dateType?.dateFormat === DateFormat.ISO && (
-          <div className={'ml-8 h-5 w-5 p-1'}>
-            <CheckmarkSvg></CheckmarkSvg>
-          </div>
-        )}
-      </button>
-      <button
-        onClick={() => changeFormat(DateFormat.Local)}
-        className={
-          'flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 hover:bg-main-secondary'
-        }
-      >
-        {t('grid.field.dateFormatLocal')}
-
-        {dateType?.dateFormat === DateFormat.Local && (
-          <div className={'ml-8 h-5 w-5 p-1'}>
-            <CheckmarkSvg></CheckmarkSvg>
-          </div>
-        )}
-      </button>
-      <button
-        onClick={() => changeFormat(DateFormat.US)}
-        className={
-          'flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 hover:bg-main-secondary'
-        }
-      >
-        {t('grid.field.dateFormatUS')}
-        {dateType?.dateFormat === DateFormat.US && (
-          <div className={'ml-8 h-5 w-5 p-1'}>
-            <CheckmarkSvg></CheckmarkSvg>
-          </div>
-        )}
-      </button>
+      <PopupItem
+        changeFormat={changeFormat}
+        format={DateFormat.Friendly}
+        checked={dateType?.dateFormat === DateFormat.Friendly}
+        text={t('grid.field.dateFormatFriendly')}
+      />
+      <PopupItem
+        changeFormat={changeFormat}
+        format={DateFormat.ISO}
+        checked={dateType?.dateFormat === DateFormat.ISO}
+        text={t('grid.field.dateFormatISO')}
+      />
+      <PopupItem
+        changeFormat={changeFormat}
+        format={DateFormat.Local}
+        checked={dateType?.dateFormat === DateFormat.Local}
+        text={t('grid.field.dateFormatLocal')}
+      />
+      <PopupItem
+        changeFormat={changeFormat}
+        format={DateFormat.US}
+        checked={dateType?.dateFormat === DateFormat.US}
+        text={t('grid.field.dateFormatUS')}
+      />
     </PopupWindow>
   );
 };
+
+function PopupItem({
+  format,
+  text,
+  changeFormat,
+  checked,
+}: {
+  format: DateFormat;
+  text: string;
+  changeFormat: (_: DateFormat) => Promise<void>;
+  checked: boolean;
+}) {
+  return (
+    <button
+      onClick={() => changeFormat(format)}
+      className={
+        'flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 hover:bg-main-secondary'
+      }
+    >
+      {text}
+
+      {checked && (
+        <div className={'ml-8 h-5 w-5 p-1'}>
+          <CheckmarkSvg></CheckmarkSvg>
+        </div>
+      )}
+    </button>
+  );
+}
