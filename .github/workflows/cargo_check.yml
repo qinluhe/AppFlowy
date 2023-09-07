@@ -1,0 +1,48 @@
+name: Validate Cargo.toml and Cargo.lock
+
+on:
+  pull_request:
+    branches:
+      - "main"
+      - "develop"
+      - "release/*"
+    paths:
+      - "frontend/appflowy_tauri/src-tauri/**"
+
+env:
+  DIRS_TO_CHECK: "frontend/appflowy_tauri/src-tauri"
+
+jobs:
+  check_cargo_lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch all branches and tags
+        run: git fetch --prune --unshallow
+
+      - name: Get commit IDs and changed files
+        run: |
+          # Get the latest commit hash of the current branch
+          current_commit=$(git rev-parse HEAD)
+          
+          # Get the latest commit hash of the target branch (base branch)
+          target_commit=$(git rev-parse ${{ github.event.pull_request.base.sha }})
+          
+          # List all changed files between the current branch's latest commit and the target branch's latest commit
+          changed_files=$(git diff --name-only $target_commit $current_commit)
+          
+          # Use grep to filter for Cargo.toml files, and if none are found, set changed_files to an empty string
+          if echo "$changed_files" | grep -q "${{ env.DIRS_TO_CHECK }}/Cargo.toml"; then
+            if ! echo "$changed_files" | grep -q "${{ env.DIRS_TO_CHECK }}/Cargo.lock"; then
+              echo "Cargo.toml files detected in the pull request, but no Cargo.lock files detected."
+              exit 1
+            else
+              echo "Cargo.toml and Cargo.lock files detected in the pull request."
+              exit 0
+            fi
+          else
+            echo "No changed Cargo.toml files detected in the pull request."
+            exit 0
+          fi
