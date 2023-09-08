@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm sync:i18n && tsc && vite build",
+    "build": "pnpm test:errors && vite build",
     "preview": "vite preview",
     "format": "prettier --write .",
     "test:code": "eslint --max-warnings=0 --ext .js,.ts,.tsx .",
