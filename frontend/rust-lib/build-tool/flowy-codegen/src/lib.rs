@@ -22,6 +22,7 @@ pub struct ProtoCache {
 
 pub enum Project {
   Tauri,
+  TauriApp,
   Web { relative_path: String },
   Native,
 }
@@ -30,6 +31,7 @@ impl Project {
   pub fn dst(&self) -> String {
     match self {
       Project::Tauri => "appflowy_tauri/src/services/backend".to_string(),
+      Project::TauriApp => "appflowy_web_app/src/application/services/tauri-services/backend".to_string(),
       Project::Web { .. } => "appflowy_web/src/services/backend".to_string(),
       Project::Native => panic!("Native project is not supported yet."),
     }
@@ -37,7 +39,7 @@ impl Project {
 
   pub fn event_root(&self) -> String {
     match self {
-      Project::Tauri => "../../".to_string(),
+      Project::Tauri | Project::TauriApp => "../../".to_string(),
       Project::Web { relative_path } => relative_path.to_string(),
       Project::Native => panic!("Native project is not supported yet."),
     }
@@ -45,7 +47,7 @@ impl Project {
 
   pub fn model_root(&self) -> String {
     match self {
-      Project::Tauri => "../../".to_string(),
+      Project::Tauri | Project::TauriApp => "../../".to_string(),
       Project::Web { relative_path } => relative_path.to_string(),
       Project::Native => panic!("Native project is not supported yet."),
     }
@@ -53,6 +55,7 @@ impl Project {
 
   pub fn event_imports(&self) -> String {
     match self {
+      Project::TauriApp |
       Project::Tauri => r#"
 /// Auto generate. Do not edit
 import { Ok, Err, Result } from "ts-results";
