@@ -3,6 +3,9 @@ import { ProviderType, SignUpWithEmailPasswordParams, UserProfile } from '@/appl
 import { HttpClient } from '@/application/services/js-services/http/client';
 import { ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME, TOKEN_TYPE_NAME } from '@/application/services/js-services/http/const';
 import { AFWasmService } from '@/application/services/wasm-services';
+import {
+  UserProfilePB,
+} from '../tauri-services/backend';
 
 export class JSAuthService implements AuthService {
 

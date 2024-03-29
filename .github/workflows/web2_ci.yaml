@@ -1,11 +1,10 @@
 name: Web2-CI
+
 on:
   pull_request:
-    branches:
-      - "main"
     paths:
       - ".github/workflows/web2_ci.yaml"
-      - "frontend/appflowy_web_app/**
+      - "frontend/appflowy_web_app/**"
 
 env:
   NODE_VERSION: "18.16.0"
