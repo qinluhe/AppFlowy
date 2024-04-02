@@ -30,3 +30,7 @@ src/application/services/tauri-services/backend/models/
 src/application/services/tauri-services/backend/events/
 
 .env
+
+# amplify
+.amplify
+amplifyconfiguration*
