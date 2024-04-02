@@ -1,0 +1,84 @@
+name: Deploy Web (Test)
+
+on:
+  push:
+    branches:
+      - build/test
+      - main
+env:
+  NODE_VERSION: "18.16.0"
+  PNPM_VERSION: "8.5.0"
+  WEB_SSH_PRIVATE_KEY: ${{ secrets.WEB_SSH_PRIVATE_KEY }}
+  WEB_REMOTE_HOST: ${{ secrets.WEB_REMOTE_HOST }}
+  WEB_REMOTE_USER: ${{ secrets.WEB_REMOTE_USER }}
+  WEB_SSL_CERTIFICATE: ${{ secrets.WEB_SSL_CERTIFICATE }}
+  WEB_SSL_CERTIFICATE_KEY: ${{ secrets.WEB_SSL_CERTIFICATE_KEY }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Maximize build space (ubuntu only)
+        if: matrix.settings.platform == 'ubuntu-20.04'
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker image prune --all --force
+          sudo rm -rf /opt/hostedtoolcache/codeQL
+          sudo rm -rf ${GITHUB_WORKSPACE}/.git
+          sudo rm -rf $ANDROID_HOME/ndk
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Node_modules cache
+        uses: actions/cache@v2
+        with:
+          path: frontend/appflowy_web_app/node_modules
+          key: node-modules-${{ runner.os }}
+      - name: install frontend dependencies
+        working-directory: frontend/appflowy_web_app
+        run: |
+          pnpm install
+      - name: test and lint
+        working-directory: frontend/appflowy_web_app
+        run: |
+          pnpm run lint
+      - name: build
+        working-directory: frontend/appflowy_web_app
+        run: |
+          pnpm run build
+      - name: Deploy to EC2
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ WEB_SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "frontend/appflowy_web_app/dist/ frontend/appflowy_web_app/Dockerfile frontend/appflowy_web_app/nginx.conf"
+          REMOTE_HOST: ${{ WEB_REMOTE_HOST }}
+          REMOTE_USER: ${{ WEB_REMOTE_USER }}
+          EXCLUDE: "/dist/, /node_modules/"
+      - name: Build and Run Docker
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ WEB_REMOTE_HOST }}
+          username: ${{ WEB_REMOTE_USER }}
+          key: ${{ WEB_SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ WEB_REMOTE_USER }}
+            ls
+#            docker build -build-arg SSL_CERTIFICATE=${{ WEB_SSL_CERTIFICATE }} -build-arg SSL_CERTIFICATE_KEY=${{ WEB_SSL_CERTIFICATE_KEY }} -t appflowy-web-app .
+#            docker run -d -p 443:31303 -p 80:31302 --name appflowy-web-app appflowy-web-app
